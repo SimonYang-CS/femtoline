@@ -36,18 +36,15 @@ ZK va(K x,K y){*((K*)xp(x,1))=y,++xn;Rx}                                        
 ZK gc(K x){rr(gc)I d=xm-xnt;Z(d,xx=m3(xx,xm=xnt),ws-=d);Rx}                                            //!< compact unused mem
 ZG eq(K x,K y){P(xn-yn,0)N(xn,P(Xg-Yg,0))R 1;}                                                         //!< compare
 
-/*
-roll your own
 
-#define tak(i,x)
-#define drp(i,x)
-#define ins(i,c)
-#define cut(i,n)
-#define go()
-ZG rleql(K x,K y)
-ZK Sn(S s,I n)
-ZI WS()
-ZI
-*/
+//! roll your own
+// #define go()         //!< optional early init
+// #define tak(i,x)     //!< drop x[i..xn]
+// #define drp(i,x)     //!< drop x[0..i]
+// #define ins(i,c)     //!< insert c at r[i]
+// #define cut(i,n)     //!< cut r[i..i+n]
+// ZG rleql(K x,K y)    //!< equality test
+// #define WS           //!< current heap alloc
+// ZK Sn(S s,I n)       //!< new line of len n
 
 //:~

@@ -28,7 +28,7 @@ K rl(G c){bk=ff=0,rfc=1;SW(ST,                                    //!< parse a b
    cU(drp(bk=v,r))cK(tak(v,r))                                    //!< kill to home  ^U ^K
    cA(home)cE(end)cD(del)                                         //!< home end del  ^A ^E ^D
    cB(rlj(0))cN(rlj(-1))cP(rlj(1))                                //!< mis(b)alance  ^B ^N ^P
-   cBSP(Z(v,cut(v-1,1),bk1);)                                     //!< backspace  ⌫
+   cBSP(Z(v,cut(v-1,1),bk1))                                      //!< backspace  ⌫
    cESC(M(esc)),rlu(c)))                                          //!< utf8 or junk
   C(esc,M(cBKT?ebkt:cEO?esco:noesc))                              //!< esc substate
   C(ebkt,rfc0;SW(c,                                               //!< eseq E [ ...
