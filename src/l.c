@@ -1,8 +1,8 @@
 //! femtoline copyright (c) 2020 regents of kparc, bsd-2-clause
 #include"l.h"
 
-_ rl1(char*p){Tc(),x=rlr(),PT=p,_rl(0);}I rl0(){R tcs(tco),r0(x),WS;}     //!< init free
-I _rl(char*p){Z(p,PT=p);R x=va(x,r=S0),v=LE=HL=ST=0,txs((char*)PT),1;}    //!< next line
+_ rl1(char*p){Tc(),x=rlr(),PT=p,_rl(0);}I rl0(){tcs(tco);r0(x);R WS;}     //!< init free
+I _rl(char*p){Z(p,PT=p);R x=va(x,r=S0),v=LE=HL=ST=0,txs(PT),1;}       //!< next line
 
 ZG rlq(){K y=H(xn-2);P(!y,0)R rleql(r,y);}                        //!< same as previous?
 ZK rlc(){P(!rn||rlq(),--xn,r)R drp(1==xn-HN,x),rla(r1(H_=r));}    //!< commit to history
@@ -10,7 +10,7 @@ ZI rlb(UI n){R!n||LMX<n?n:10>n?txN('\b',n):txe(n,'D');}           //!< move care
 Z_ rlt(){txs(EL);red(rG+v,rn-v),v+=ff,rlb(rn-v);}                 //!< redraw the (t)ail
 ZK rld(){rlb(bk),v-=bk;Z(rfc,rlt())cya(rG+v,ff),v+=ff;R(K)0;}     //!< re(d)raw and move
 ZK rlf(){R txs(PT),txk(r),rlb(rn-v),(K)0;}                        //!< (f)ull line reset
-Z_ rlp(){N(xn-1,txN(' ',2),txi(i),tx_(),txk(Xk),nl())}            //!< history (p)rinter
+Z_ rlp(){N(xn,/*-1,*/txN(' ',2),txi(i),tx_(),txi(xr),tx_(),txk(Xk),nl())}            //!< history (p)rinter
 ZI rlw(){I d,t=v;rwd(' '==_Rv)rwd(' '-_Rv)R cut(v,d=t-v),v=t,d;}  //!< erase last (w)ord
 ZI rlh(I d){P(2>xn,0)P(rll(d),bk=v,ff=rn;rfc=1)R 0;}              //!< (h)istory browser
 ZI rlj(I m){P(!rn,0)R rfc0,bk=v,ff=m?vmv(r,v,m):bb(r,v);}         //!< (j)ump or balance
@@ -46,6 +46,6 @@ K rl(G c){bk=ff=0,rfc=1;SW(ST,                                    //!< parse a b
 
 #define Pt "> "
 ZI txB(){R txs("\nfemtoline")+txf("lc",!NOLIBC)+txf("aw",AW)+txf("bb",FBB)+txf("fio",FIO)+txf("utf",FUN)+txs(" (^r help)\n");}
-ZI oe(K x){P(EOT==x,0)P(NOP==x,1)R txk(x),nl(),_rl(Pt);}I main(I n,char**a){txB(),rl1(Pt);W(oe(rl(getchar()))){};R rl0();}
+ZI oe(K x){P(EOT==x,0)P(NOP==x,1)R txk(x),nl(),_rl(Pt);}I main(I n,char**a){txB(),rl1(Pt);W(oe(rl(getchar()))){};R ex(),rl0();}
 
 //:~

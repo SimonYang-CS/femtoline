@@ -52,7 +52,7 @@ static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(f)wd
 #define H_                xK[xn-1]        //!< last line in history
 #define hp                xn-1-HL         //!< inverted history pos
 #define QH(n)             IN(0,hp+n,xn-1)   //!< validate new index
-#define rll(n)            QH(n)?(HL-=n,r=r1(H(hp))):0 //<! selector
+#define rll(n)            QH(n)?(HL-=n,r=H(hp)):0 //<! selector
 
 //! terminal conrols
 #define CTL(ctl,a...)     C(ctl,  a)
@@ -111,10 +111,10 @@ enum {AMB=227,RED=196,CYA=207};
 #define _Rv               rG[vv-1]                   //!< previous byte
 #define swp()             c=Rvv,Rvv=_Rv,_Rv=c;       //!< swap curr<>prev
 #define lg(x)             999<x?4:99<x?3:9<x?2:1
-#define PM(c)             c?'+':'-'
-ZI iS(UI y,S x)           {I n;_N(n=lg(y),x[i]='0'+y%10ul;y/=10)R n;} //!< itoa
 
 //! sink (n)bytes (s)tr (i)ntstr (k)str (_)space (N)times (nl)ine (ws)size (e)seq (i)nfo (B)anner
+#define PM(c)             c?'+':'-'
+ZI iS(UI y,S x)           {I n;_N(n=lg(y),x[i]='0'+y%10ul;y/=10)R n;} //!< itoa
 ZI txn(S x,I n){P(!n,n)N(n,ftx(x[i]));R n;}ZI txs(char*x){R txn((S)x,sln((S)x));}ZI txi(UI x){G s[4];R txn(s,iS(x,s));}
 ZI txk(K x){R txn(xG,xn);}ZI tx_(){R ftx(' '),1;}ZI txN(G c,I n){N(n,ftx(c))R n;}ZI nl(){R txs(EOL);}
 ZI txws(){R txs(" used ")+txi(WS)+ftx('b')+tx_();}ZI txe(UI n,G c){R txs(EBKT)+txi(n)+ftx(c);}//!< E [ n CMD
