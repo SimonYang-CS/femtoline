@@ -1,6 +1,6 @@
 //! better c, public domain
 typedef void _;typedef unsigned char*S,G;typedef unsigned short H;typedef int I;typedef unsigned long long UJ;typedef long long J;typedef unsigned int UI;
-typedef struct k{H m;G t;H n;S x;}k;typedef k*K;ZI ws=0; //!< (m)em (t)ype le(n) (x)payload (ws)ize (max)0xffff
+typedef struct k{H m;G t;H n;S x;}k;typedef k*K;static UI ws=0; //!< (m)em (t)ype le(n) (x)payload (ws)ize (max)0xffff
 
 #define R             return
 #define  W(a...)      while(({a;}))
@@ -25,7 +25,7 @@ typedef struct k{H m;G t;H n;S x;}k;typedef k*K;ZI ws=0; //!< (m)em (t)ype le(n)
 
 //! malloc
 #include<stdlib.h>    //!< malloc calloc realloc free
-#define m1(n)         (ws+=n,malloc(n))
+#define m1(n)         malloc(n)
 #define m2(a,n)       realloc(a,n)
 #define m0            free
 
