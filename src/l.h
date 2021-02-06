@@ -168,7 +168,7 @@ Z_ Tc(){go();rltc();}
 #define Qb(c,a...)          P(c,ftx(7),a) //!< send audio bell on bracket misbalance
 //! class                   !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 ZG cl(G c){P(!c,0)R 128>c?"  q     ()                 ;                               ( )                             ( ) "[c-32]:0;}
-ZS bq(S x){W((x=sch(++x,'"'))&&!({I i=0;W('\\'==x[--i]);1&i;}));R x;} //!< ffwd quoted string w/escapes
+ZS bq(S x){W((x=sch(++x,'"'))&&!({I i=0;W('\\'==x[--i]){};1&i;})){};R x;} //!< ffwd quoted string w/escapes
 ZI bb(K r,I c){G b[16];I p[16],a,n=0,t=-1;S s,x=rG-1;W(a=*++x)SW(cl(a),C('q',s=bq(x);Qb(!s,x,Jp)c=Jp==c?s-rG:s-rG==c?Jp:c,x=s;)
  C('(',Qb(16==++n,Jp)p[n]=Jp,b[n]=*x;Z(c==Jp,t=Jp))C(')',Qb(!n,Jp)Qb(b[n]!=*x-1-*x/64,p[n])c=Jp==c?p[n]:p[n]==t?Jp:c,--n))Qb(n,p[n])R c;}
 ZI vmv(K r,I c,I n){I i=c+n;xnc(i,n,!sch((S)"(;)",cl(Rg)))R MN(MX(0,i),rn);} //!< move caret to next|prev {[(;)]}

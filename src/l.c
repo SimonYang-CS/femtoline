@@ -46,6 +46,6 @@ K rl(G c){bk=ff=0,rfc=1;SW(ST,                                    //!< parse a b
 
 #define Pt "> "
 ZI txB(){R txs("\nfemtoline")+txf("lc",!NOLIBC)+txf("aw",AW)+txf("bb",FBB)+txf("fio",FIO)+txf("utf",FUN)+txs(" (^r help)\n");}
-ZI oe(K x){P(!x,1)R txk(x),nl(),_rl(Pt);}I main(I n,char**a){txB(),rl1(Pt);W(oe(rl(getchar())));R rl0();}
+ZI oe(K x){P(!x,1)R txk(x),nl(),_rl(Pt);}I main(I n,char**a){txB(),rl1(Pt);W(oe(rl(getchar()))){};R rl0();}
 
 //:~
