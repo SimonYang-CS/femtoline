@@ -3,8 +3,9 @@
 //! config
 #include<stdio.h>
 #define ftx               putchar       //!< your sink goes here
-#define LMX               256           //!< max line length
-#define HN                32            //!< max history size
+#define LMX               256           //!< max line length in bytes
+#define HMX               32            //!< max lines of history
+#define MMX               8*1024        //!< max heap (can be less than L*H, nyi)
 #define AW                0             //!< use k9 backend
 
 //! feature flags
@@ -112,13 +113,16 @@ enum {AMB=227,RED=196,CYA=207};
 #define swp()             c=Rvv,Rvv=_Rv,_Rv=c;       //!< swap curr<>prev
 #define lg(x)             999<x?4:99<x?3:9<x?2:1
 
-//! sink (n)bytes (s)tr (i)ntstr (k)str (_)space (N)times (nl)ine (ws)size (e)seq (i)nfo (B)anner
-#define PM(c)             c?'+':'-'
-ZI iS(UI y,S x)           {I n;_N(n=lg(y),x[i]='0'+y%10ul;y/=10)R n;} //!< itoa
-ZI txn(S x,I n){P(!n,n)N(n,ftx(x[i]));R n;}ZI txs(char*x){R txn((S)x,sln((S)x));}ZI txi(UI x){G s[4];R txn(s,iS(x,s));}
-ZI txk(K x){R txn(xG,xn);}ZI tx_(){R ftx(' '),1;}ZI txN(G c,I n){N(n,ftx(c))R n;}ZI nl(){R txs(EOL);}
-ZI txws(){R txs(" used ")+txi(WS)+ftx('b')+tx_();}ZI txe(UI n,G c){R txs(EBKT)+txi(n)+ftx(c);}//!< E [ n CMD
-ZI txf(char*s,G c){R tx_(),ftx(PM(c)),txs((char*)s);}
+//! tx (p)ad (i)nt (B)anner (n)bytes (s)tr (N)times (p)ad (p)ad(i)nt (k)str (_)space (nl)ine (M)ark (f)+- (ws)size (p)rompt (e)seq
+#define txi(x)  txpi(x,0)
+#define txi2(x) txpi(x,2)
+#define txi3(x) txpi(x,3)
+ZI iS(UI y,S x){I n;_N(n=lg(y),x[i]='0'+y%10ul;y/=10)R n;} //!< itoa
+ZI txn(S x,I n){P(!n,n)N(n,ftx(x[i]));R n;}ZI txs(char*x){R txn((S)x,sln((S)x));}ZI txN(G c,I n){N(n,ftx(c))R n;}
+ZI txp(S x,I n,I p){R txN(' ',MX(0,p-n))+txn(x,n);}ZI txpi(UI x,I p){G s[4];x=iS(x,s);R txp(s,x,MN(4,p));}
+ZI txk(K x){R txn(xG,xn);}ZI tx_(){R ftx(' '),1;}ZI nl(){R txs(EOL);}ZI txM(char s[2],G c){R ftx(s[!!c]);}
+ZI txf(char*s,G c){R tx_(),txM("+-",c),txs((char*)s);}ZI txws(){R DBG?tx_()+txi(WS)+tx_():0;}ZI txpt(){R txws()+txs(PT);}
+ZI txe(UI n,G c){R txs(EBKT)+txi(n)+ftx(c);}//!< E [ n CMD
 
 //! refcard ^R
 static char*hlp=
@@ -187,9 +191,9 @@ ZI vmv(K r,I c,I n){R c;}
 ZJ rlfsk(FILE*d,J j,I f){R fseek(d,j,f);}ZJ rlfsz(char*x){FILE*f=fopen(x,"a+");P(!f,0)rlfsk(f,0,SEEK_END);J r=ftell(f);R fclose(f),r;}
 ZK rla(K r){I d=open(FHF,O_RDWR|O_CREAT|O_APPEND,S_IRUSR|S_IWUSR);P(0>d,r)write(d,rG,MN(rn,LMX));write(d,"\n",1);R close(d),r;}  //!< append
 _*rlm1(char*f,J*n){*n=rlfsz(f);I d=open(f,O_RDWR,O_CREAT,0);_*r=mmap(0,1+*n,PROT_READ,MAP_SHARED,d,0);R close(d),r;}_ rlm0(_*a,J n){munmap(a,n);}
-ZK rlr(){J j,l,n=0;S s,y=s=(S)rlm1(FHF,&n);P(!y||!n,kK(0));I c;K r=kK(c=HN);N(c,Rk=S0)              //!< restore HN lines of history from file
-//c=-c;j=-1; N(n+1,Z('\n'==Yg||n==i,l=i-j-1;Z(IN(1,l,LMX),rK[HN+c++]=Sn(y+j+1,l);Z(!c,goto EX));j=i))EX:R rlm0(y,n),drp(c,r);}   //!< top down
-  j= n;_N(n,l='\n'==y[i];Z(l||!i,l+=i;Z(IN(1,j-l,LMX),rK[--c]=Sn(y+l,j-l);Z(!c,goto EX));j=i))                                  //!< bottom up
+ZK rlr(){J j,l,n=0;S s,y=s=(S)rlm1(FHF,&n);P(!y||!n,kK(0));I c;K r=kK(c=HMX);N(c,Rk=S0)             //!< restore HMX lines of history from file
+//c=-c;j=-1; N(n+1,Z('\n'==Yg||n==i,l=i-j-1;Z(IN(1,l,LMX),rK[HMX+c++]=Sn(y+j+1,l);Z(!c,goto EX));j=i))EX:R rlm0(y,n),drp(c,r);}   //!< top down
+  j= n;_N(n,l='\n'==y[i];Z(l||!i,l+=i;Z(IN(1,j-l,LMX),XY(&rK[--c],Sn(y+l,j-l));Z(!c,goto EX));j=i))                                  //!< bottom up
   EX:R rlm0(y,n),drp(c,r),r;}
 #else
 ZK rlr(){R kK(0);}ZK rla(K r){R r;}
