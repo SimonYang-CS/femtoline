@@ -20,7 +20,7 @@ K rl(G c){bk=ff=0,rfc=1;SW(ST,                                    //!< parse a b
    Z(in(" ~"),ins(v,&c),ff=1)                                     //!< insert ascii
    P(cNL,nl(),rlc())                                              //!< commit eol ⏎
    P(cTAB&&1<xn,nl(),rlp(),rlf())                                 //!< show history
-   P(cC||!rn&&In(1,5),(K)0)                                       //!< sigint | nop  ^C
+   P(cC,EOT)P(!rn&&In(1,5),NOP)                                   //!< sigint | nop  ^C
    P(cR,nl(),txs(hlp),rlf())SW(c,                                 //!< display help  ^R
    cL(txs(ED),rlf())                                              //!< clear screen  ^L
    cW(bk=rlw())                                                   //!< erase a word  ^W
@@ -46,6 +46,6 @@ K rl(G c){bk=ff=0,rfc=1;SW(ST,                                    //!< parse a b
 
 #define Pt "> "
 ZI txB(){R txs("\nfemtoline")+txf("lc",!NOLIBC)+txf("aw",AW)+txf("bb",FBB)+txf("fio",FIO)+txf("utf",FUN)+txs(" (^r help)\n");}
-ZI oe(K x){P(!x,1)R txk(x),nl(),_rl(Pt);}I main(I n,char**a){txB(),rl1(Pt);W(oe(rl(getchar()))){};R rl0();}
+ZI oe(K x){P(EOT==x,0)P(NOP==x,1)R txk(x),nl(),_rl(Pt);}I main(I n,char**a){txB(),rl1(Pt);W(oe(rl(getchar()))){};R rl0();}
 
 //:~

@@ -46,7 +46,6 @@ static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(f)wd
 #define end               goto END
 #define del               goto DEL
 #define xesc              goto XESC          //!< leave escape mode
-#define eot               ({goto EOT;1;})  //!< end of transmission
 
 //! history
 #define H(i)              (xn?IN(0,i,xn-1)?xK[i]:0:0) //!< get item
@@ -78,7 +77,8 @@ static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(f)wd
 #define cEO               (79==c)
 #define cBKT              (91==c)
 #define EOL               "\r\n"
-#define x04               (K)0x04            //!< (E)nd (O)f (T)ransmission
+#define EOT               (K)0x04         //!< (E)nd (O)f (T)ransmission
+#define NOP               (K)0x00         //!< request next byte
 #define EBKT              "\x1b["         //!< dec vt100 escape sequence
 #define EL                "\x1b[K"        //!< (E)rase (L)ine to the end
 #define ED                "\x1b[H\x1b[2J" //!< (E)rase (D)isplay command
@@ -133,7 +133,6 @@ static char*hlp=
   "  alt home end    ^ae\n"
   "  kill<=>caret    ^udk\n"
   "  show history    tab\n"
-
 //" quit session     esc-esc\n"
 ;
 
@@ -153,12 +152,12 @@ static UI rlu(G c){UI u=0;ubc(c);P(2>UN,0)if(u=cpt(UB))txn(UB,UN);if(u||4==UN)UN
 static UI rlu(G c){R 0;}
 #endif//FU8
 
-//! canonical mode
+//! terminal mode
 #include<termios.h>
 static struct termios tco,tcn;
 #define tcg(t)            tcgetattr(0,&t)
 #define tcs(t)            tcsetattr(0,TCSANOW,&t)
-#define tc1(t)            t.c_lflag&=~ICANON&~ECHO,tcs(t)
+#define tc1(t)            t.c_lflag&=~(ICANON|ECHO|ISIG),tcs(t)
 #define rltc()            LC();tcg(tco),tcn=tco,tc1(tcn)
 Z_ Tc(){go();rltc();}
 
@@ -190,7 +189,7 @@ ZK rla(K r){I d=open(FHF,O_RDWR|O_CREAT|O_APPEND,S_IRUSR|S_IWUSR);P(0>d,r)write(
 _*rlm1(char*f,J*n){*n=rlfsz(f);I d=open(f,O_RDWR,O_CREAT,0);_*r=mmap(0,1+*n,PROT_READ,MAP_SHARED,d,0);R close(d),r;}_ rlm0(_*a,J n){munmap(a,n);}
 ZK rlr(){J j,l,n=0;S s,y=s=(S)rlm1(FHF,&n);P(!y||!n,kK(0));I c;K r=kK(c=HN);N(c,Rk=S0)              //!< restore HN lines of history from file
 //c=-c;j=-1; N(n+1,Z('\n'==Yg||n==i,l=i-j-1;Z(IN(1,l,LMX),rK[HN+c++]=Sn(y+j+1,l);Z(!c,goto EX));j=i))EX:R rlm0(y,n),drp(c,r);}   //!< top down
-  j= n;_N(n,l='\n'==y[i];Z(l||!i,l+=i;Z(IN(1,j-l,LMX),rK[--c]=Sn(y+l,j-l);Z(!c,goto EX));j=i))        //!< bottom up
+  j= n;_N(n,l='\n'==y[i];Z(l||!i,l+=i;Z(IN(1,j-l,LMX),rK[--c]=Sn(y+l,j-l);Z(!c,goto EX));j=i))                                  //!< bottom up
   EX:R rlm0(y,n),drp(c,r),r;}
 #else
 ZK rlr(){R kK(0);}ZK rla(K r){R r;}
