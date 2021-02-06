@@ -41,9 +41,9 @@ typedef struct k{H m;G t;H n;H r;S x;}k;typedef k*K;static UI ws=0; //!< (m)em (
 #define Rg            rG[i]
 #define Xk            xK[i]
 #define Rk            rK[i]
-#define xn            (x->n)
-#define yn            (y->n)
-#define rn            (r->n)
+#define xn            x->n
+#define yn            y->n
+#define rn            r->n
 
 #define xm            x->m
 #define xt            x->t
