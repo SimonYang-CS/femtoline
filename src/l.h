@@ -118,12 +118,19 @@ enum {AMB=227,RED=196,CYA=207};
 #define txi(x)  txpi(x,0)
 #define txi2(x) txpi(x,2)
 #define txi3(x) txpi(x,3)
+#define txk0(x) txk(x),nl()
 ZI iS(UI y,S x){I n;_N(n=lg(y),x[i]='0'+y%10ul;y/=10)R n;} //!< itoa
 ZI txn(S x,I n){P(!n,n)N(n,ftx(x[i]));R n;}ZI txs(char*x){R txn((S)x,sln((S)x));}ZI txN(G c,I n){N(n,ftx(c))R n;}
 ZI txp(S x,I n,I p){R txN(' ',MX(0,p-n))+txn(x,n);}ZI txpi(UI x,I p){G s[4];x=iS(x,s);R txp(s,x,MN(4,p));}
 ZI txk(K x){R txn(xG,xn);}ZI tx_(){R ftx(' '),1;}ZI nl(){R txs(EOL);}ZI txM(char s[2],G c){R ftx(s[!!c]);}
 ZI txf(char*s,G c){R tx_(),txM("+-",c),txs((char*)s);}ZI txws(){R DBG?tx_()+txi(WS)+tx_():0;}ZI txpt(){R txws()+txs(PT);}
 ZI txe(UI n,G c){R txs(EBKT)+txi(n)+ftx(c);}//!< E [ n CMD
+
+#if DBG
+Z_ txhl(K x,UI i){txM("* ",hp-i),txi3(i),txi3(xr),tx_(),txk0(x);}
+#else
+Z_ txhl(K x,UI i){txpi(i,4),tx_(),txk0(x);}
+#endif
 
 //! refcard ^R
 static char*hlp=
