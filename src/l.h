@@ -12,7 +12,8 @@
 #define FUN               0             //!< unicode support
 #define FBB               1             //!< bracket balancer
 #define FIO               1             //!< persist sessions
-#define DBG               0             //!< show partial redraws
+#define DBG               1             //!< refcount debug
+#define CLR               0             //!< partial redraw debug
 #define NOLIBC            1             //!< partially nyi
 #define FHF               ".k"          //!< history filename
 
@@ -92,7 +93,7 @@ enum {AMB=227,RED=196,CYA=207};
 #define red(s,n)          txnC(RED,s,n)
 #define cya(s,n)          txnC(CYA,s,n)
 #define amb(s,n)          txnC(AMB,s,n)
-#if DBG
+#if CLR
 #define txC(c,e...)       (clr(c),e,off())
 #else
 #define txC(c,e...)       (e)
