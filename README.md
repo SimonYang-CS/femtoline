@@ -1,6 +1,6 @@
 ## femtoline
 
-yet another readline.
+`fl` is a compact readline for embedded systems.
 
 ### build
 
