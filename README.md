@@ -32,7 +32,7 @@ femtoline -lc -aw +bb +fio -utf (^r help)
 ### faq
 
 * unicode nyi
-* miltiline nyi
+* multiline nyi
 * bsd-2-clause
 
 `//:~`
