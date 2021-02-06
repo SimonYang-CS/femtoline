@@ -36,7 +36,7 @@ ZK va(K x,K y){*((K*)xp(x,1))=y,++xn;Rx}                                        
 ZK gc(K x){rr(gc)I d=xm-xnt;Z(d,xx=m2(xx,xm=xnt),ws-=d);Rx}                                            //!< compact unused ram
 ZG eq(K x,K y){P(xn-yn,0)N(xn,P(Xg-Yg,0))R 1;}                                                         //!< compare
 ZK sw(K*k,K y){R r0(*k),*k=y;}                                                                         //!< free x and replace with y
-ZK go(){R s0=r1(ss("")),printf("go s0=%p\n",(_*)s0),s0;}ZK ex(){printf("sigint *** ws=%d s0->r=%d\n",ws,s0->r);R0;}
+ZK go(){R s0=r1(ss(""));}ZK ex(){printf("sigint *** ws=%d s0->r=%d\n",ws,s0->r);R0;}
 
 //! roll your own
 // #define go()         //!< optional early init
