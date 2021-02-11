@@ -1,23 +1,22 @@
 //! femtoline copyright (c) 2020 regents of kparc, bsd-2-clause
 #include"l.h"
 
-Z_ rlp();
-_ rl1(char*p){Tc(),go(),x=rlr(),PT=p,_rl(0);}I rl0(){r0(x);
- pf("sigint *** ws=%d\b",WS);ext();R WS;}     //!< init free
+ZI rlp();
+_ rl1(char*p){Tc(),go(),x=rlr(),PT=p,_rl(0);}I rl0(){r0(x);pf("sigint *** ws=%d\n",WS);ext();R WS;} //!< init free
 I _rl(char*p){Z(p,PT=p);R
   //x=va(x,r=kC(0)),
   rlp(),v=LE=HL=ST=0,txpt(),1;}       //!< next line
 
-ZG rlq(){K y=H(xn-2);P(!y,0)R cmp(r,y);}                        //!< same as previous?
+ZG rlq(){K y=H(xn-2);P(!y,0)R cmp(r,y);}                          //!< same as previous?
 ZK rlc(){P(!rn||rlq(),--xn,r1(r))R rla(r1(H_=r));}    //!< commit to history   //drp(1==xn-HMX,x)
 //ZG rlq(){K y;P(!(y=H(xn-2)),0)R cmp(r,y);}                          //!< same as previous?
 //ZK rlc(){P(!rn||rlq(),--xn,r)R drp(1==xn-HMX,x),rla(H_=r);}        //!< commit to history
 //ZK rlc(){P(!rn||rlq(),--xn,r0(r))R drp(1==xn-HMX,x),rla(H_=r);}        //!< commit to history
 ZI rlb(UI n){R!n||LMX<n?n:10>n?txN('\b',n):txe(n,'D');}           //!< move caret (b)ack
-Z_ rlt(){pf(EL);red(rG+v,rn-v),v+=ff,rlb(rn-v);}                 //!< redraw the (t)ail
+Z_ rlt(){pf(EL);red(rG+v,rn-v),v+=ff,rlb(rn-v);}                  //!< redraw the (t)ail
 ZK rld(){rlb(bk),v-=bk;Z(rfc,rlt())cya(rG+v,ff),v+=ff;R(K)0;}     //!< re(d)raw and move
 ZK rlf(){R txpt(),txk(r),rlb(rn-v),(K)0;}                         //!< (f)ull line reset
-Z_ rlp(){N(xn-!DBG,txhl(Xk,i))}                                   //!< history (p)rinter
+ZI rlp(){P(!x,x)N(xn-!DBG,txhl(Xk,i))}                            //!< history (p)rinter
 ZI rlw(){I d,t=v;rwd(' '==_Rv)rwd(' '-_Rv)R cut(v,d=t-v),v=t,d;}  //!< erase last (w)ord
 ZI rlh(I d){P(2>xn,0)P(rll(d),bk=v,ff=rn;rfc=1)R 0;}              //!< (h)istory browser
 ZI rlj(I m){P(!rn,0)R rfc0,bk=v,ff=m?vmv(r,v,m):bb(r,v);}         //!< (j)ump or balance
@@ -55,13 +54,15 @@ K rl(){G c;NX:c=RX();bk=ff=0,rfc=1;SW(ST,                         //!< parse a b
 #define Pt "> "
 
 #define F(opt)   ("-+"[!!opt])
-ZI txban(){R pf("\nfemtoline %clc %caw %cpf %ctty %cbb %cfio %cutf mmx=%d (^r help)\n",F(NOLIBC),F(AW),F(FPF),F(FTY),F(FBB),F(FIO),F(FUN),MMX());}
 ZI oe(K x){P(EOT==x,0)P(NOP==x,1)R txk(x),nl(),_rl(Pt);}
 
 I main(I n,char**a){
-  txban();
-  R 0;
-  rl1(Pt);W(oe(rl()));R rl0();}
+  pf("\nfemtoline %clc %caw %cpf %ctty %cbb %cfio %cutf mmx=%d (^r help)\n",F(!NOLIBC),F(AW),F(FPF),F(FTY),F(FBB),F(FIO),F(FUN),MMX());
+
+  rl1(Pt);
+  //R 0;
+  W(oe(rl()));
+  R rl0();}
 #endif
 
 //:~

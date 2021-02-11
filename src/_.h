@@ -27,5 +27,6 @@ static UI ws=0;
 #define ZJ                static J
 #define ZK                static K
 #define Z_                static _
+#define ZZ                static inline
 
 //:~

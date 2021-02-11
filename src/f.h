@@ -1,55 +1,55 @@
 //! femtoline copyright (c) 2020 regents of kparc, bsd-2-clause
 
+//! core comms (tx)byte (txn)bytes (txN)times
+ZI tx(G c){R write(1,&c,1);}ZI txn(S x,I n){P(!n,n)N(n,tx(x[i]));R n;}ZI txN(G c,I n){N(n,tx(c))R n;}
+
 #if FPF
 //! printf
+#include<unistd.h> //<! size_t write(2)
 #define VMX 16
-typedef union{S s;G g;J d;_*p;}arg;typedef arg args[VMX];
+typedef union{UJ uj;}arg;typedef arg args[VMX]; //!< avoid gcc error
+#define PU(f,t) ZZ S f(S s,t i){t j;do*--s='0'+i-10*(j=i/10);W(i=j);R s;} //!< parse signed/unsigned
+#define TU(f,t,u) ZZ I f(t x,I p,I l){I n;S r=jS(x,&n,u);R txp(r,n,p);}   //!< tx signed/unsigned
 
-//! parseint itoa atoi hexstr
-ZG xb[26];ZS ng(S s){R*--s='-',s;}ZS pu(S s,J i){J j;do*--s='0'+i-10*(j=i/10);W(i=j);R s;}S jS(J i,I*n){S r=0>i?ng(jS(-i,n)):pu(xb+25,i);R*n=25+(xb-r),r;}
+//! strlen memset parseint itoa atoi hexstr
+ZG xb[26];ZS ng(S s){R*--s='-',s;}PU(pj,J)PU(pu,UJ);
+ZS jS(UJ i,I*n,G u){S r=(!u&&0>(J)i)?ng(jS(-i,n,u)):u?pu(xb+25,i):pj(xb+25,i);R*n=25+(xb-r),r;}
 UI sI(S a,I*n){G c;UI i=0,r=*n=0;W((c=*a++)&&IN('0',c,'9'))i++,r=r*10u+((UI)c-'0');R*n=i,r;}ZS hh(S s,G c);
-ZS hh(S s,G c){N(2,G a=i?c&15:c>>4;s[i]="0W"[9<a]+a)R s;}ZI jX(J j){S s=xb+25;J k=j;do hh(s-=2,k);W(k>>=8);R 25-(s-xb);}
+ZS hh(S s,G c){N(2,G a=i?c&15:c>>4;s[i]="0W"[9<a]+a)R s;}ZI jX(UJ j){S s=xb+25;UJ k=j;do hh(s-=2,k);W(k>>=8);R 25-(s-xb);}
 
 //! (tx)byte (txn)bytes (txN)times (b)yte (i)nt he(x) (s)tr (p)ad
-ZI tx(G c){R write(1,&c,1);}ZI txn(S x,I n){P(!n,n)N(n,tx(x[i]));R n;}ZI txN(G c,I n){N(n,tx(c))R n;}
 ZI txp(S x,I n,I p){R txN(' ',MX(0,p-n))+txn(x,n)+txN(' ',ABS(MN(0,p+n)));}ZI txb(G c,I p,I l){R txp(&c,1,p);}
-ZI txx(J j,I p,I l){I n=jX(j)+2;S b=xb+25-n;*b='0',b[1]='x';R txp(b,n,p);}
-ZI txj(J x,I p,I l){I n;S r=jS(x,&n);
-	R txp(r,n,p);}
+ZI txx(UJ j,I p,I l){I n=jX(j)+2;S b=xb+25-n;*b='0',b[1]='x';R txp(b,n,p);}TU(txj,J,0)TU(txu,UJ,1)
 ZI txs(S x,I p,I l){R txp((S)x,l?l:sln(x),p);}
 
-#pragma warning disable int-conversion
-#define vi a[i++]
+#define vi (a[i++].uj)
 #define pf(f,a...) txpf(f,(args){a}) //!< arguments of pf() as an array of void ptrs, up to VMX
-#define ag(c,a,t,f) C(c,n+=f((t)a,flg*flw,prc);) //!< call f((type)nextarg,options)
-#define nx continue;
+#define va(c,t,f) C(c,n+=f((t)vi,flg*flw,prc);) //!< call f((type)nextarg,options)
+#define nx continue
 
-//! %[%-][09][.09*]cdps
-I txpf(S f,args a){G c;I j,i=0,n=0;UI flg,flw,prc;
- W(c=*f++){flg=prc=0,flg=j=1;Z('%'-c,tx(c);nx)W(j)SW(c=*f,C('-',flg=-1,f++),j=0)
-  flw=sI(f,&j),f+=j,c=*f;Z('.'==c,prc=sI(++f,&j);f+=j;c=*f;Z(!j,Z('*'-c,f++;nx)c=*++f;prc=(I)a[i++].d;))c=*f;W('l'==c||'h'==c)c=*++f;
-  SW(c,C('%',tx(c))ag('c',vi.g,G,txb)ag('d',vi.d,J,txj)ag('p',vi.d,J,txx)ag('s',vi.s,S,txs))f++;}R n;}
-#pragma warning restore int-conversion
+//! %[%-][09..][.09..*]dcups
+I txpf(S f,args a){                          //!< (f)ormat string (aka tape), (a)rguments
+ G c;I j,i=0,n=0;                            //!< total le(n)gth, arg(i)ndex, curr(c)har
+ UI flg,flw,prc;                             //!< fmt flags, field width, precision
+ W(c=*f++){                                  //!< while more chars left on tape,
+  flg=prc=0,flg=j=1;                         //!< reset state, then:
+  Z('%'-c,tx(c);nx)                          //!< echo c unless %, otherwise:
+  W(j)SW(c=*f,C('-',flg=-1,f++),j=0)         //!< scan flags (%flg)
+  flw=sI(f,&j),f+=j,c=*f;                    //!< scan field width (%flw)
+  Z('.'==c,prc=sI(++f,&j);f+=j;c=*f;         //!< scan precision (%.prc)
+   Z(!j,Z('*'-c,f++;nx)                      //!< %.[not 09*] is empty field
+    c=*++f;prc=(I)vi))c=*f;                  //!< scan positional precision (%.*)
+  W('l'==c||'h'==c)c=*++f;                   //!< skip [lh..] nop
+  SW(c,                                      //!< conversion specifier dispatch
+   va('c',G,txb)va('d',J,txj)va('u',UJ,txu)
+   va('p',UJ,txx)va('s',S,txs)C('%',tx(c)))
+  f++;}R n;}
 
-/*
-//! atoi|itoa|hex
-ZI iS(UI y,S x){I n;_N(n=1+lg10(y),x[i]='0'+y%10ul;y/=10)R n;}ZG ib[11]="-";
-UI sI(char*a){G c;UI r=0;W(c=*a&&in("09")){r=r*10u+((UI)c-'0');++r;};R r;}ZG xb[24];ZS hh(S s,G c);
-ZI jX(J j){S s=xb+23;J k=j;do hh(s-=2,k);W(k>>=8);R 23-(s-xb);}ZS hh(S s,G c){N(2,G a=i?c&15:c>>4;s[i]="0W"[9<a]+a)R s;}
-
-//! comms (i)nt (B)anner (n)bytes (s)tr (N)times (p)ad (p)ad(i)nt (k)str (_)space (nl)ine (M)ark (F)+- (ws)size (p)rompt (h)ex (e)seq
-ZI txn(S x,I n){P(!n,n)N(n,txb(x[i]));R n;}I txs(char*x){R txn((S)x,sln((S)x));}ZI txN(G c,I n){N(n,txb(c))R n;}ZI txws();
-ZI txp(S x,I n,I p){R txN(' ',MX(0,p-n))+txn(x,n);}I txpi(I x,I p){G t=0>x,*s=ib+1;x=t+iS(ABS(x),s);R txp(s-t,x,MN(11,p));}
-ZI txk(K x){;R x?txn(xG,xn):0;}
-ZI tx_(){R txb(' ');}ZI nl(){R txs(EOL);}ZI txM(char s[2],G c){R txb(s[c]);}
-I txF(G c){R txM("-+",c);}ZI txpt(){R txws()+txs(PT);}
-I txx(J j){I n=jX(j);R txs("0x")+txn(xb+23-n,n);}ZI txbell(){R txb(7);}ZI txe(UI n,G c){R txs(EBKT)+txi(n)+txb(c);}//!< E [ n CMD
-
-*/
-
+#define pfl()             (0)
 #else
 #include<stdio.h>
-#define pf printf
+#define pfl()             fflush(0)
+#define pf                printf
 #endif
 
 //! unicode prims
@@ -76,7 +76,7 @@ static UI rlu(G c){R 0;}
 static struct termios tco,tcn; //!< old|new
 #define tcg(t)            ioctl(0,TCGETS,&t)
 #define tcs(t)            ioctl(0,TCSETS,&t)
-#define tc1(t)            t.c_lflag&=~(ICANON|ECHO|ISIG),t.c_cc[VMIN]=1,t.c_cc[VTIME]=0;tcs(t) //!< blocking read(), disable echo, escapes and sighandlers
+#define tc1(t)            t.c_lflag&=~(ICANON|ECHO|ISIG),t.c_cc[VMIN]=1,t.c_cc[VTIME]=0;tcs(t) //!< blocking read, no echo, pass escapes and signals
 #define rltc()            tcg(tco),tcn=tco,tc1(tcn); //!< LC();todo !isatty(0)
 Z_ Tc(){rltc();}
 #else
@@ -86,7 +86,7 @@ Z_ Tc(){}
 //! bracket balancer
 #if FBB
 #define Jp (x-rG)
-#define Qb(c,a...)          P(c,pf("\7"),a) //!< send audio bell on bracket misbalance
+#define Qb(c,a...)          P(c,tx('\7'),a) //!< send audio bell on bracket misbalance
 //! class                   !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 ZG cl(G c){P(!c,0)R 128>c?"  q     ()                 ;                               ( )                             ( ) "[c-32]:0;}
 ZS bq(S x){W((x=sch(++x,'"'))&&!({I i=0;W('\\'==x[--i]){};1&i;})){};R x;} //!< ffwd quoted string w/escapes
@@ -94,8 +94,7 @@ ZI bb(K r,I c){G b[16];I p[16],a,n=0,t=-1;S s,x=rG-1;W(a=*++x)SW(cl(a),C('q',s=b
  C('(',Qb(16==++n,Jp)p[n]=Jp,b[n]=*x;Z(c==Jp,t=Jp))C(')',Qb(!n,Jp)Qb(b[n]!=*x-1-*x/64,p[n])c=Jp==c?p[n]:p[n]==t?Jp:c,--n))Qb(n,p[n])R c;}
 ZI vmv(K r,I c,I n){I i=c+n;xnc(i,n,!sch((S)"(;)",cl(Rg)))R MN(MX(0,i),rn);} //!< move caret to next|prev {[(;)]}
 #else
-ZI bb(K r,I c){R c;}
-ZI vmv(K r,I c,I n){R c;}
+ZI bb(K r,I c){R c;}ZI vmv(K r,I c,I n){R c;}
 #endif//FBB
 
 //! persistence

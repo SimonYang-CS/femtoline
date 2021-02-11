@@ -122,7 +122,7 @@ ZS sch(S s,I c)           {W(*s-c)P(!*s++,(S)0)R s;}
 ZS mcp(S d,S s,I n)       {W(n--)*d++=*s++;R d;}
 ZS memmove(S d,S s,I n)   {P(s<d&&d<s+n,d+=n,s+=n;W(n--)*--d=*--s;d)R mcp(d,s,n);}
 //void *memset(void *s, int c, size_t n);
-ZS memset(S s,I c,I n)    {N(n,s[n]=c);R s;}
+ZS memset(S x,I c,I n)    {N(n,Xg=c);R x;}
 #define mmv memmove
 #define mset memset
 #define ABS(e)            ((0>(e))?(-(e)):(e))

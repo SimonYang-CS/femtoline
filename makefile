@@ -6,8 +6,6 @@ WL=-Werror -pedantic -Wno-empty-body -Wno-variadic-macros -Wno-gnu-statement-exp
 WG=-Werror -pedantic -Wno-variadic-macros -Wno-unused-value -Wno-builtin-declaration-mismatch -Wno-int-conversion
 A=-m64
 
-
-
 #-Wno-empty-body -Wno-unused-value
 
 pf: c
@@ -16,14 +14,13 @@ pf: c
 	@ls -la pf
 	@./pf
 
-
 t: c
 	@#tcc -std=c11 -DNOLIBC=1 -Werror -pedantic -dynamic $A -c src/p.c  -O0
 	@#tcc -DAW=0 -DNOLIBC=1 -std=c11 -nostdlib -Werror -pedantic $A -ot src/[lms].c src/s.S p.o -O0
 	@#tcc -DAW=0 -DNOLIBC=1 -std=c11 -nostdlib -Werror -pedantic $A -c src/[lms].c src/s.S -Os
 	@#tcc -DAW=0 -DNOLIBC=1 -std=c11 -Werror -pedantic $A -ot ?.o -Os
-	tcc -DAW=0 -DNOLIBC=1 -nostdlib -std=c11 $A -ot src/?.[cS] -O0 -g
-	@strip -s t
+	@#tcc -DAW=0 -DNOLIBC=1 -nostdlib -std=c11 $A -ot src/?.[cS] -O0 -g -w
+	@tcc -DAW=0 -DNOLIBC=1 -std=c11 $A -ot src/?.c -O0 -g -w
 	@ls -la t
 	@./t
 
@@ -41,10 +38,10 @@ l: c
 	@./l
 
 g: c
-	@gcc -DNOLIBC=1 -no-pie -DAW=0 src/?.c -og $O $(WG) $A -Os -Wno-pedantic
-	@strip g
+	@gcc -DNOLIBC=1 -no-pie -DAW=0 src/?.c -og $O $(WG) $A -O0 -g -Wno-pedantic
+	@#strip g
 	@ls -la g
-	#s
+	@lldb ./g
 
 gg: c
 	@gcc -DNOLIBC=1 -nostdlib -no-pie -DAW=0 src/?.[cS] -og $O $(WG) $A -Os -Wno-pedantic

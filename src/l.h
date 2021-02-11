@@ -7,7 +7,7 @@ extern void rl1(char*);K rl();int _rl(char*),rl0();
 
 enum{noesc,esc,ebkt,ebkt0,esco};        //!< line states
 typedef struct rls{G st;I hl;I ct;char*pt;G le;G un;G ub[5];}rls; //! curr state
-static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(f)wd (r)edraw from caret
+static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(ff)wd (r)edraw(f)rom(c)aret
 
 //! state accessors
 #define ST                RL.st         //!< current state
@@ -89,8 +89,8 @@ enum {Amb=227,Red=196,Cya=207};
 #define txC(c,e...)       (e)
 #endif
 
-#define cRED(cond)       ((cond)?"\x1b[38;5;196m":"")
-#define cOFF()           "\x1b[0m"
+#define cRED(cond)        ((cond)?"\x1b[38;5;196m":"")
+#define cOFF()            "\x1b[0m"
 
 
 #define In(l,r)           IN(l,c,r)
@@ -110,11 +110,12 @@ enum {Amb=227,Red=196,Cya=207};
 //! feature code
 #include"f.h"
 
+//! extra comms
 I txfatal(S s)            {R pf((S)"fatal: %s\n",s),exit(1),1;}
 #define txk(x)            ((x&&xn)?pf("%.*s",xn,xG):0)
-#define nl(x)             pf("\n")
-#define txe(n,c)          pf("%s%d%c",EBKT,n,c)       //!< E [ n CMD
-#define txpt()            pf(PT)                      //!< prompt
+#define nl(x)             tx('\n')
+#define txe(n,c)          (pf("%s%d%c",EBKT,n,c),pfl())       //!< E [ n CMD
+#define txpt()            txn(PT,sln(PT))                     //!< prompt
 
 #if DBG
 ZI txhl(K y,UI i)         {R pf("%c%3d %3d %s%p%s ","* "[hp-i],i,yr,cRED(s0==y),(J)y,cOFF())+txk(y)+nl()}; //!< history line
@@ -147,6 +148,5 @@ ZI MMX(){I lsz = MX(64,LMX) + 8,       //!< single line, minimum of 64 bytes + o
                  hmx * sizeof(char*),  //!< history ring buffer
            mlm = MLM?MX(256,MLM):mlh;  //!< if MLM is defined, no less than 256 bytes
            R MN(mlm,mlh);}             //!< effective alloc limit, MLM takes precedence if set
-
 
 //:~
