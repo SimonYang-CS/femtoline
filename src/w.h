@@ -1,6 +1,6 @@
 //! femtoline copyright (c) 2020 regents of kparc, bsd-2-clause
 
-#include"../b.h"
+#include"../../b.h"
 
 #define IN(l,x,r)         ((l)<=(x)&&(x)<=(r))
 
@@ -12,13 +12,22 @@ K an(K,I,K[3]),p9(S);    ZK INS,CUT;
 #define drp(i,x)         x=OP(15,i,x)
 #define ins(i,c)         (r=AN(INS,i,kc(*(c)),r))
 #define cut(i,n)         (r=AN(CUT,i,ki(n),r))
-ZG rleql(K x,K y)        {P(xn-yn,0)N(xn,P(Xg-Yg,0))R 1;}
+ZG cmp(K x,K y)          {P(xn-yn,0)N(xn,P(Xg-Yg,0))R 1;}
 K Sn(S s,I n)            {K x=kC(n);R mcp(xG,s,n),x;}
+
+ZK YX(K*k,K y){R r0(*k),*k=y;}                                                                         //!< free x and replace with y
+
 
 extern K1 w_;
 #define WS               MX(0,_i(w_(0))-16) //!< dbg
 
 Z_ rltest(){}
 ZK $d(K x){R x;}
+
+#define xr xI[-3]
+#define yr yI[-3]
+
+ZK ext(){R(K)0;}
+
 
 //:~
