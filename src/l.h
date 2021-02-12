@@ -1,13 +1,13 @@
 //! femtoline copyright (c) 2020 regents of kparc, bsd-2-clause
 
-#include"../o.h"          //!< options
+#include"../fl.h"          //!< feature flags
 
 //!         init         readline  prompt    free
 extern void rl1(char*);K rl();int _rl(char*),rl0();
 
 enum{noesc,esc,ebkt,ebkt0,esco};        //!< line states
 typedef struct rls{G st;I hl;I ct;char*pt;G le;G un;G ub[5];}rls; //! curr state
-static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(ff)wd (r)edraw(f)rom(c)aret
+static rls RL;ZK r,x;ZI bk,ff,rfc;      //!< (s)tate cur(r)line (x)istory (b)ack(ff)wd (r)edraw(f)rom(c)aret
 
 //! state accessors
 #define ST                RL.st         //!< current state
@@ -25,19 +25,17 @@ static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(ff)w
 #define home              goto HOME
 #define end               goto END
 #define del               goto DEL
-#define xesc              goto XESC          //!< leave escape mode
-#define next              goto NX;           //!< read next byte
+#define xesc              goto XESC     //!< leave escape mode
+#define next              goto NX;      //!< read next byte
 
 //! history
 #define H(i)              (xn?IN(0,i,xn-1)?xK[i]:0:0) //!< get item
 #define H_                xK[xn-1]        //!< last line in history
 #define hp                xn-1-HL         //!< inverted history pos
 #define QH(n)             IN(0,hp+n,xn-1)   //!< validate new index
-#define rll(n)            QH(n)?(HL-=n,r=H(hp)):0 //<! selector
+#define rll(n)            QH(n)?(HL-=n,r=H(hp)):0     //<! selector
 
-//#define CTL(ctl,a...)     C(ctl,  a)
-
-//! ctrl+key
+//! ctrl+keystroke
 #define cA(a...)          C(1,  a)
 #define cB(a...)          C(2,  a)
 #define cD(a...)          C(4,  a)
@@ -50,7 +48,7 @@ static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(ff)w
 #define cU(a...)          C(21, a)
 #define cW(a...)          C(23, a)
 
-//! plain keystroke
+//! keystroke
 #define cESC(a...)        C( 27,a)
 #define cBSP(a...)        C(127,a)
 #define cC                 ( 3==c)
@@ -67,12 +65,13 @@ static rls RL;ZK r,x;ZI bk,ff,rfc; //!< (s)tate cur(r)line (x)istory (b)ack(ff)w
 #define eH(a...)          C('H',a)
 #define eF(a...)          C('F',a)
 
+//! viti idioms
 #define EOL               "\r\n"
-#define EOT               (K)0x04         //!< (E)nd (O)f (T)ransmission
 #define NOP               (K)0x00         //!< request next byte
+#define EOT               (K)0x04         //!< (e)nd (o)f (t)ransmission
 #define EBKT              "\x1b["         //!< dec vt100 escape sequence
-#define EL                "\x1b[K"        //!< (E)rase (L)ine to the end
-#define ED                "\x1b[H\x1b[2J" //!< (E)rase (D)isplay command
+#define EL                "\x1b[K"        //!< (e)rase (l)ine to the end
+#define ED                "\x1b[H\x1b[2J" //!< (e)rase (d)isplay command
 
 //! ansi color
 enum {Amb=227,Red=196,Cya=207};
@@ -107,16 +106,15 @@ enum {Amb=227,Red=196,Cya=207};
 #define _Rv               rG[vv-1]                   //!< previous byte
 #define swp()             c=Rvv,Rvv=_Rv,_Rv=c;       //!< swap curr<>prev
 
-//! feature code
+//! features
 #include"f.h"
 
-//! extra comms
+//! fl-specific comms
 I txfatal(S s)            {R pf((S)"fatal: %s\n",s),exit(1),1;}
 #define txk(x)            ((x&&xn)?pf("%.*s",xn,xG):0)
 #define nl(x)             tx('\n')
 #define txe(n,c)          (pf("%s%d%c",EBKT,n,c),pfl())       //!< E [ n CMD
 #define txpt()            txn(PT,sln(PT))                     //!< prompt
-
 #if DBG
 ZI txhl(K y,UI i)         {R pf("%c%3d %3d %s%p%s ","* "[hp-i],i,yr,cRED(s0==y),(J)y,cOFF())+txk(y)+nl()}; //!< history line
 #define txws()            pf(" %d ",WS)               //!< current alloc
@@ -125,7 +123,7 @@ ZI txhl(K y,UI i)         {R pf("%4d ",i)+txk(y)+nl();}
 #define txws()            (0)
 #endif
 
-//! refcard ^R
+//! refcard ^r
 static char*hlp="\n"
   "  erase a word    ^w\n"
   "  clear screen    ^l\n"
@@ -141,7 +139,7 @@ static char*hlp="\n"
 //" quit session     esc-esc\n"
 ;
 
-//! alloc limit
+//! hard alloc limit (nyi)
 ZI MMX(){I lsz = MX(64,LMX) + 8,       //!< single line, minimum of 64 bytes + overhead
            hmx = MX( 0,HMX) + 1,       //!< line count + current line buffer
            mlh = lsz * hmx +           //!< total worst case line storage
