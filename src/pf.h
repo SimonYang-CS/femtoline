@@ -1,5 +1,7 @@
 //! nolibc printf(3), copyright (c) 2020 regents of kparc, bsd-2-clause
 
+//#define NOPF
+
 #pragma once
 #ifndef PF_H
 #define PF_H
@@ -92,15 +94,15 @@ ZI txs(char*x,I f,I p,I l){R txp((S)x,l?l:slen(x),PLR,PCH);}
 //! %[%-][09..][.09..*]dcups
 I txpf(char*f,args a,I ac){P(!f,f)             //!< (f)ormat string (aka tape), (a)rguments, (a)rg(c)ount
  P(PFCH&&(char*)128>f,tx(*(G*)&f))             //!< optional char check for f, see PFCH
- G c;I j,i=0,n=0;                              //!< total le(n)gth, arg(i)ndex, curr(c)har
+ G c;I t,i=0,n=0;                              //!< total le(n)gth, arg(i)ndex, curr(c)har, (t)rash var
  UI flg,flw,prc;                               //!< fmt flags, field width, precision
  W(c=*f++){                                    //!< while more chars left on tape:
   Z('%'-c,echo)Z('%'==*f,f++,echo)             //!< echo c until first %, %% is literal %, otherwise:
-  flg=prc=0,j=1;                               //!< reset state, then:
-  W(j)SW(c=*f,Cf('-',1)Cf('0',2)Cf('#',3),j=0) //!< scan format flags (%[-0#])
-  flw=sI(f,&j),f+=j,c=*f;                      //!< scan field width (%flw)
-  Z('.'==c,prc=sI(++f,&j);f+=j;c=*f;           //!< scan precision (%.prc)
-   Z(!j,Z('*'-c,f++;continue)                  //!< invalid precision is empty field
+  flg=prc=0,t=1;                               //!< reset state, then:
+  W(t)SW(c=*f,Cf('-',1)Cf('0',2)Cf('#',3),t--) //!< scan format flags (%[-0#])
+  flw=sI(f,&t),f+=t,c=*f;                      //!< scan field width (%flw)
+  Z('.'==c,prc=sI(++f,&t);f+=t;c=*f;           //!< scan precision (%.prc)
+   Z(!t,Z('*'-c,f++;continue)                  //!< invalid precision is empty field
     c=*++f;varg(prc)))c=*f;                    //!< scan positional precision (%.*)
   W('l'==c||'h'==c)c=*++f;                     //!< skip [lh..]
   Z(ac==i,vtx(txs,"(null)"))                   //!< print (null) on argc overflow
@@ -114,8 +116,9 @@ I txpf(char*f,args a,I ac);
 
 #pragma GCC diagnostic pop
 #else
-#include<stdio.h>                              //!< stock printf(3)
+#include<stdio.h>              //!< stock printf(3)
 #include<stdlib.h>             //!< exit(2)
+#define pf printf
 #endif//NOPF
 
 #endif//PF_H

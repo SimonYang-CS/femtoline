@@ -1,13 +1,11 @@
 //! femtoline copyright (c) 2020 regents of kparc, bsd-2-clause
 
-#include"../fl.h"          //!< feature flags
-
-//!         init         readline  prompt    free
-extern void rl1(char*);K rl();int _rl(char*),rl0();
+//! config
+#include"../fl.h"
 
 enum{noesc,esc,ebkt,ebkt0,esco};        //!< line states
 typedef struct rls{G st;I hl;I ct;char*pt;G le;G un;G ub[5];}rls; //! curr state
-static rls RL;ZK r,x;ZI bk,ff,rfc;      //!< (s)tate cur(r)line (x)istory (b)ack(ff)wd (r)edraw(f)rom(c)aret
+static rls RL;ZL r;ZK x;ZI bk,ff,rfc;      //!< (s)tate cur(r)line (x)istory (b)ack(ff)wd (r)edraw(f)rom(c)aret
 
 //! state accessors
 #define ST                RL.st         //!< current state
@@ -17,9 +15,8 @@ static rls RL;ZK r,x;ZI bk,ff,rfc;      //!< (s)tate cur(r)line (x)istory (b)ack
 #define LE                RL.le         //!< last esc char
 #define UN                RL.un         //!< utf counter
 #define UB                RL.ub         //!< utf buffer
-#define M(m)              ST=m          //!< change state
 #define rfc0              rfc=0         //!< skip redraw from caret
-#define bk1               bk=1          //!< caret back by one char
+#define rn                ln(r)         //!< line length
 
 //! state shortcuts
 #define home              goto HOME
@@ -27,6 +24,7 @@ static rls RL;ZK r,x;ZI bk,ff,rfc;      //!< (s)tate cur(r)line (x)istory (b)ack
 #define del               goto DEL
 #define xesc              goto XESC     //!< leave escape mode
 #define next              goto NX;      //!< read next byte
+#define M(m)              ST=m;next;    //!< change state and read next
 
 //! history
 #define H(i)              (xn?IN(0,i,xn-1)?xK[i]:0:0) //!< get item
@@ -65,12 +63,12 @@ static rls RL;ZK r,x;ZI bk,ff,rfc;      //!< (s)tate cur(r)line (x)istory (b)ack
 #define eH(a...)          C('H',a)
 #define eF(a...)          C('F',a)
 
-//! viti idioms
+//! viti100
 #define EOL               "\r\n"
-#define NOP               (K)0x00         //!< request next byte
-#define EOT               (K)0x04         //!< (e)nd (o)f (t)ransmission
+#define NOP               (L)0x00         //!< request next byte
+#define EOT               (L)0x04         //!< (e)nd (o)f (t)ransmission
 #define EBKT              "\x1b["         //!< dec vt100 escape sequence
-#define EL                "\x1b[K"        //!< (e)rase (l)ine to the end
+#define EL                "\x1b[K",3      //!< (e)rase (l)ine to the end
 #define ED                "\x1b[H\x1b[2J" //!< (e)rase (d)isplay command
 
 //! ansi color
@@ -82,6 +80,7 @@ enum {Amb=227,Red=196,Cya=207};
 #define cya(s,n)          txnC(Cya,s,n)
 #define amb(s,n)          txnC(Amb,s,n)
 #define redQ(q,e...)      ((q)?txC(Red,(e)):(e))      //!< conditional
+
 #if CLR
 #define txC(c,e...)       (clr(c),e,off())
 #else
@@ -91,37 +90,9 @@ enum {Amb=227,Red=196,Cya=207};
 #define cRED(cond)        ((cond)?"\x1b[38;5;196m":"")
 #define cOFF()            "\x1b[0m"
 
-
 #define In(l,r)           IN(l,c,r)
 #define in(r)             In(*r,r[1])
 #define le(x)             LE==x                      //!< prev escape char
-
-//! string manip (^wt)
-#define eol               (v==rn)
-#define xnc(x,n,c)        W(x&&!x-rn&&(c))x+=n;      //!< move x while cond
-#define rwd(c)            xnc(v,-1,c)                //!< rewind caret while cond
-#define clp()             ({ff+=MN(0,rn-v+bk-ff);})  //!< clamp ff to eol
-#define vv                (v?eol?v-1:v:1)            //!< fixme can be better
-#define Rvv               rG[vv]                     //!< byte under caret
-#define _Rv               rG[vv-1]                   //!< previous byte
-#define swp()             c=Rvv,Rvv=_Rv,_Rv=c;       //!< swap curr<>prev
-
-//! features
-#include"f.h"
-
-//! fl-specific comms
-I txfatal(S s)            {R pf((S)"fatal: %s\n",s),exit(1),1;}
-#define txk(x)            ((x&&xn)?pf("%.*s",xn,xG):0)
-#define nl(x)             tx('\n')
-#define txe(n,c)          (pf("%s%d%c",EBKT,n,c),pfl())       //!< E [ n CMD
-#define txpt()            txn(PT,sln(PT))                     //!< prompt
-#if DBG
-ZI txhl(K y,UI i)         {R pf("%c%3d %3d %s%p%s ","* "[hp-i],i,yr,cRED(s0==y),(J)y,cOFF())+txk(y)+nl()}; //!< history line
-#define txws()            pf(" %d ",WS)               //!< current alloc
-#else
-ZI txhl(K y,UI i)         {R pf("%4d ",i)+txk(y)+nl();}
-#define txws()            (0)
-#endif
 
 //! refcard ^r
 static char*hlp="\n"
@@ -135,16 +106,14 @@ static char*hlp="\n"
  #endif
   "  alt home end    ^ae\n"
   "  kill<=>caret    ^udk\n"
-  "  show history    tab\n\n"
-//" quit session     esc-esc\n"
-;
+  "  show history    tab\n\n";
 
-//! hard alloc limit (nyi)
-ZI MMX(){I lsz = MX(64,LMX) + 8,       //!< single line, minimum of 64 bytes + overhead
-           hmx = MX( 0,HMX) + 1,       //!< line count + current line buffer
-           mlh = lsz * hmx +           //!< total worst case line storage
-                 hmx * sizeof(char*),  //!< history ring buffer
-           mlm = MLM?MX(256,MLM):mlh;  //!< if MLM is defined, no less than 256 bytes
-           R MN(mlm,mlh);}             //!< effective alloc limit, MLM takes precedence if set
+//! extra comms
+I txfatal(S s)            {R pf((S)"fatal: %s\n",s),exit(1),1;}
+#define nl(x)             tx('\n')
+#define txe(n,c)          (pf("%s%d%c",EBKT,n,c),pfl())       //!< E [ n CMD
+#define txpt()            txn(PT,sln(PT))                     //!< prompt
+ZI txhl(K y,UI i)         {R pf("%4d ",i)+lfl(y)+nl();}
+
 
 //:~

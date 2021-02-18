@@ -3,7 +3,11 @@
 
 #include"c.h"
 
-ZK M[31],s0;ZJ W; //!< M memory buckets, W wssize
+#if NOLIBC
+#include"t.h"
+#include"m.h"
+
+ZK M[31],k0;ZJ W; //!< M memory buckets, W wssize
 
 K m1(J n){K x,r;                //!< allocate a memory block
  I i=29-clz(n+7),j=i;             //!< i is the bucket id, log2((UI)n+7)
@@ -52,7 +56,7 @@ ZK ks(J x){R(K)(KS<<48|x);}                 //!< new symbol
 //ZK _qs(S s){R(K)(QQ<<48|(J)s);}             //!< error atom, s is strerror
 //ZK jc(K x,C c){R j2(x,kc(c));}              //!< append char to string
 #define qs(s) _qs((S)(s))
-K sr1(){R r1(s0);}
+K K0(){R r1(k0);}
 
 //! insert items of y after the i-th element of x:
 K xiy(K x,I i,K y){
@@ -71,7 +75,7 @@ K j2(K x,K y){                  //!< join two lists
 
 //! posix wrappers
 #ifdef USE_AW_MALLOC
-_ aw_malloc_init(){s0=kC(0),W=0;}                     //!< seed allocation
+_ aw_malloc_init(){k0=kK(0),W=0;}                     //!< seed allocation
 _*aw_malloc(szt n){P(!n,(_*)0)R(_*)tn(KC,(I)n);}      //!< allocate a list of n bytes
 _*aw_realloc(_*p,szt n){K x=(K)p;                     //!< if ptr is null, realloc() is same as malloc
     P(!x||!n,Z(x,aw_free(p));aw_malloc(n?n:1))        //!< if size is 0 and ptr is not, ptr is freed and a new 1b-sized object is allocated
@@ -85,5 +89,11 @@ _*aw_calloc(szt n,szt sz){                            //!< allocate n*sz bytes a
 _ aw_free(_*p){r0((K)p);}
 J aw_malloc_used(){R wss();}
 #endif
+
+#else
+
+J wss(){R 0;}
+
+#endif //NOLIBC
 
 //:~

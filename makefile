@@ -8,12 +8,6 @@ A=-m64
 
 #-Wno-empty-body -Wno-unused-value
 
-pf: c
-	@tcc -DFPF -std=c11 -pedantic -fno-common -funsigned-char -opf $A src/p.c -Os
-	@strip -s pf
-	@ls -la pf
-	@./pf
-
 t: c
 	@#tcc -std=c11 -DNOLIBC=1 -Werror -pedantic -dynamic $A -c src/p.c  -O0
 	@#tcc -DAW=0 -DNOLIBC=1 -std=c11 -nostdlib -Werror -pedantic $A -ot src/[lms].c src/s.S p.o -O0

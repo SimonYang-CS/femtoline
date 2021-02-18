@@ -1,5 +1,10 @@
 //! femtoline copyright (c) 2020 regents of kparc, bsd-2-clause
 
+#include"src/_.h"
+
+//!         init         readline  prompt    free
+extern void rl1(char*);K rl();int _rl(char*),rl0();
+
 //! config
 #define LMX               64*1          //!< max line byte length (multiples of 64)
 #define HMX               32            //!< max lines of history (>=0)
@@ -11,36 +16,28 @@
 
 //! feature flags
 #define FUN               0             //!< unicode support
-#define FBB               1             //!< bracket balancer
+#define FBB               0             //!< bracket balancer
 #define FTY               1             //!< set tty raw mode
 #define FIO               0             //!< persist sessions
-#define FPF               1             //!< use own printf
 #define DBG               0             //!< refcount debug
 #define CLR               1             //!< partial redraw debug
 #define FHF               ".k"          //!< history filename
 
-#if NOLIBC
-#define M1(n)             aw_malloc(n)
-#define M2(a,n)           aw_realloc(a,n)
-#define M0                aw_free
-#define TX                wb            //!< putchar
-#define RX                rb            //!< getchar
+//! malloc
+#include"src/m.h"
 
-#else
-#include<stdio.h>
-#define M1(n)             malloc(n)
-#define M2(a,n)           realloc(a,n)
-#define M0                free
-#define TX                putchar
-#define RX                getchar
-#define FPF               printf
-#endif
+//! nolibc
+#include"src/c.h"
 
-//! line buffer backend
-#if AW
-#include"src/w.h"
-#else
-#include"src/k.h"
-#endif
+//! printf
+#include"src/pf.h"
+
+//! line buffer
+#include"src/b.h"
+
+//! features
+#include"src/f.h"
+
+
 
 //:~

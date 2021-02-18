@@ -2,187 +2,70 @@
 
 #include"b.h"
 
-//#include <time.h>
+//#define      go()         //!< optional init nyi
+//#define      ext()        //!< optional teardown nyi
 
-/*
-//! start timer
-ext clock_t clk_start();
-
-//! milliseconds lapsed since last clk_start()
-ext UJ clk_stop();
-
-//! calculate ms difference between start and end
-ext UJ clk_diff(clock_t s, clock_t e);
-*/
-
-/*
-clock_t start,end;
-
-clock_t clk_start() {
-	R start = clock();
-}
-
-UJ clk_diff(clock_t s, clock_t e) {
-	R(e - s) * 1E3 / CLOCKS_PER_SEC;
-}
-
-UJ clk_stop() {
-	end = clock();
-	UJ r = clk_diff(start,end);
-	start = end; //< allow chained clk_stop()
-	R r;
-}
-*/
-
-//#define       go()         //!< optional early init
-//#define       ext()        //!< optional teardown
-
-#define Lb     b->s        //!< string buffer (aka start)
-#define Lt     b->t        //!< total alloc
-#define Lf     b->f        //!< front (bytes behind caret)
-#define Lg     b->g        //!< gap size
+#define Lb     b->s          //!< string buffer (aka start)
+#define Lt     b->t          //!< total alloc
+#define Lf     b->f          //!< front (bytes behind caret)
+#define Lg     b->g          //!< gap size
 #define Lfg    (Lf+Lg)
 #define Lfb    (Lb+Lf)
 #define Lfbg   (Lfb+Lg)
-#define Ln     (Lt-Lg)     //!< string length, alloc-(front+gap)
+#define Ln     (Lt-Lg)       //!< string length
 #define ZL     static L
 
-Z_ gb_ini(L b,I n){Lt=Lg=n=n+!n;Lf=0;Lb=M1(n);}
-ZL gb_new(I n){L r=(L)M1(sizeof(gb));R gb_ini(r,n),r;}
-Z_ gb_inC(L b,I c){Z(!Lg,I bak=Lt-Lf;Lg=Lt;Lb=M2(Lb,Lt*=2);Z(bak,mmv(Lfbg,Lfb,bak)));Lb[Lf++]=c,--Lg;}
-Z_ gb_inS(L b,S s,I n){Z(!s||!n,R)W(Lg<n)Lg=0,gb_inC(b,0),--Lf;mcp(Lfb,s,n),Lf+=n,Lg-=n;}
+//! basic gap buffer
+_ gb_ini(L b,I n){Lt=Lg=n=n+!n;Lf=0;Lb=M1(n);}
+L gb_new(I n){L r=(L)M1(SZ(gb));R gb_ini(r,n),r;}
+_ gb_inC(L b,I c){Z(!Lg,I bak=Lt-Lf;Lg=Lt;Lb=M2(Lb,Lt*=2);mmv(Lfbg,Lfb,bak));Lb[Lf++]=c,--Lg;}
+_ gb_inS(L b,S s,I n){Z(!s||!n,R)W(Lg<n)Lg=0,gb_inC(b,0),--Lf;mcp(Lfb,s,n),Lf+=n,Lg-=n;}
+_ gb_mov(L b,I a){I l;S d,s;d=s=Lfb,l=0>a,a=MN(a,Ln*!l-Lf),d+=l?Lg+a:0,s+=l?a:Lg;Lf+=a,mmv(d,s,ABS(a));}
+_ gb_bak(L b){Z(0<Lf,Lb[Lfg-1]=Lb[Lf-1];Lf--);}
+_ gb_fwd(L b){I bak=Ln-Lf;Z(0<bak,Lb[Lf]=Lb[Lfg];Lf++);}
+I gb_del(L b){R Lfg<Lt?Lg++:0;}
+_ gb_bsp(L b){Z(Lf--,Lg++);}
 
-/*
-void
-gapbuf_move(struct gapbuf *b, ptrdiff_t amt)
-{
-    size_t len;
-    char *dst, *src;
-    if (amt < 0) {
-        len = -amt;
-        if (len > b->front)
-            len = b->front;
-        dst = b->buf + b->front + b->gap - len;
-        src = b->buf + b->front - len;
-        b->front -= len;
-    } else {
-        size_t back = b->total - b->front - b->gap;
-        len = amt;
-        if (len > back)
-            len = back;
-        dst = b->buf + b->front;
-        src = b->buf + b->front + b->gap;
-        b->front += len;
-    }
-    memmove(dst, src, len);
-}
-*/
+L LN(S s,UI n)           {L r=gb_new(n);gb_inS(r,s,n);R r;}    //!< line from str
+L L0()                   {R LN("",0);}                         //!< new empty line
+I li(L b,UI i)           {R Lb[(Lf<=i)*Lg+i];}                 //!< item at i
+I ln(L b)                {R Ln;}                               //!< line length
+I lff(L b,UI i,UI n)     {Nj(n=MN(n,Ln-i),tx(li(b,i+j)));R n;} //!< flush line fragment
+I lfl(L b)               {R txn(Lb,Lf)+txn(Lfbg,Lt-Lfg);}      //!< flush line
 
-#define sgn(i) ((i>0)-(i<0))
-#define clip(i,m,mm) MN(mm,MN(m,ABS(i)))
-#define min(a,b) ({typeof(b)_a=(a),_b=(b);_a<_b?_a:_b;})
-#define max(a,b) ({typeof(b)_a=(a),_b=(b);_a>_b?_a:_b;})
+_ gb_test();
 
-#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-
-#if 1
-I  gb_mov(L b,I a){I l;S d,s;
- Z(0>a,l=-a;Z(Lf<l,l=Lf);d=Lfbg-l; s=Lfb -l;   Lf-=l)
-  {    l= a;Z(Ln<l,l=Ln);d=Lfb   ; s=Lfbg  ;   Lf+=l;}
- R mmv(d,s,l);}
-#else
-#include <stddef.h>
-I  gb_mov(L b,I a){pf("\n\nmov a=%d\n",a);P(!a,a)S d,s;I t=0>a;
-
-	//a=ABS(a);pf("mov: a=(%d) t=%d sgn=%d abs=%d clip=%d ln|f=%d Lf=%d\n",a,t,sgn(a),ABS(a),min(t?Lf:Ln,ABS(a)),t?Ln:Lf,Lf);
-
-	a=ABS(a);a=CLAMP(a,Lf,Ln);
-
-	pf("mov: t=(%d) a=(%d) Lf=%d Ln=%d\n",t,a,Lf,Ln);
-
-	d=s=Lfb+a*t;Lf+=a;
-	mmv(d+Lg*t,s+Lg*!t,a);R 0;}
-#endif
-
-Z_ gb_bak(L b){Z(0<Lf,Lb[Lfg-1]=Lb[Lf-1];Lf--);}
-Z_ gb_fwd(L b){Z(0<Ln,Lb[Lf]=Lb[Lfg];Lf++);}
-Z_ gb_del(L b){Z(Lfg<Lt,Lg++);}
-Z_ gb_bsp(L b){Z(Lf--,Lg++);}
-
-L sL(S s,UI n)             {L r=gb_new(n);gb_inS(r,s,n);R r;}                  //!< line from str
-L L0()                     {R sL("",0);}                                       //!< new empty line
-I ln(L b)                  {R Ln;}                                             //!< line length
-
-L lin(L b,UI i,G g)        {R gb_mov(b,i-Lf),gb_inC(b,g),b;}                   //!< insert byte at b[i]
-L lins(L b,UI i,S s,UI n)  {R gb_mov(b,i-Lf),gb_inS(b,s,n),b;}                 //!< insert str at b[i]
-
-L lc(L b,UI i,UI n)        {gb_mov(b,i-Lf);N(n,gb_del(b));R b;}                //!< cut b[i..i+n]
-G li(L b,UI i)             {R Lb[(Lf<i)*Lg+i];}                                //!< item at
-I lp(L b,UI i,UI n)        {P(!n||Ln<=i,0)Nj(n=MN(n,Ln-i),tx(li(b,i+j)));R n;} //!< tx part
-I lo(L b)                  {R txn(Lb,Lf)+txn(Lfbg,Lt-Lfg);}                    //!< tx whole
-L lj(L b,UI i)             {R gb_mov(b,i-Lf);}                                 //!< (j)ump move caret to i
-
-_ lbk(L b)            {gb_bak(b);}
-_ lfw(L b)            {gb_fwd(b);}
-_ lbs(L b)            {gb_bsp(b);}
-_ ldl(L b)            {gb_del(b);}
-
-_ lsw(L b,UI i,UI j)  {R;} //!< nyi swap
-
-_ O(L b){
-	pf("frt=%d gap=%d tot=%d ln=%d\n",Lf,Lg,Lt,Ln);
-
+Z_ gb_dbg(L b){
+	pf("\nfrt=%d gap=%d tot=%d ln=%d\n",Lf,Lg,Lt,Ln);
 	tx('|');N(Lf,tx(li(b,i)))txN('_',Lg);
+	N(Lt-Lfg,tx(li(b,Lf+i)))pf("|\n");}
 
-	//pf("adv=%d\n",Lt-Lfg);
-	//pf("PAST=%c\n",at(b,Lf+Lg));
-	N(Lt-Lfg,tx(li(b,Lf+i)))pf("|\n");
-}
+#define O() gb_dbg(r)
 
-_ test() {
+_ gb_test() {
 
-	L b=sL("kelas",5);O(b);
+	R;
 
-	lin(b,ln(b),'K');O(b);
-	lin(b,ln(b),'E');O(b);
-	lin(b,ln(b),'L');O(b);
+	L r=LN("kelas",5);ljp(0);O();
 
-	lbk(b);O(b);
-	lbk(b);O(b);
+	lin('1');O();
+	lin('2');O();
 
-	gb_mov(b,-5);O(b);pf("\nlo(%d): ",Ln);lo(b);pf("\n");
+	R;
+
+	r=LN("kelas",5);O();
+
+	lin('K');O();
+	lin('E');O();
+	lin('L');O();
+
+	lbk();O();
+	lbk();O();
 
 	exit(0);
 
-	pf("lo: ");lo(b);pf("\n");
-
-	exit(0);
-
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-	lbk(b);O(b);
-
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
-	lfw(b);O(b);
+	N(16,lbk(),O())
+	N(16,lfw(),O())
 
 /*
 	pf("\ntxl:");txl(b);pf("\n");
@@ -192,16 +75,10 @@ _ test() {
 	pf(" xfer7-100: (%d)\n",out(b,0,100));
 	//gb_bak(b);
 	//gb_inc(b,'a');O(b);
-*/
-
 	//Nj(26,gb_inC(b,'a'+j),O(b));Nj(100,gb_bak(b),O(b));
-	pf("\ncheck (len=%d):",ln(b));N(ln(b),pf("(%c)",li(b,i)));
-
 	//pf("at(0)=%c\n",Lb[0]);
 	//O(b);
-
-
-
+*/
 
 }
 
@@ -237,7 +114,7 @@ _ vfre(V b){M0(Vb),Vb=0;}
 
 /*
 
-//! simple line buffer
+//! simplest possible line buffer
 #define kK(n)             ma(n,SZK)
 #define S0                r1(s0)
 #define tak(i,x)          x=tk(x,i)
@@ -289,5 +166,18 @@ ZK ext(){R0;}
 // #define ss           //!< K from string
 // #define WS           //!< current heap size
 // ZK Sn(S s,I n)       //!< new line of len n
+
+/*
+ Z(0>a,l=-a;Z(Lf<l,l=Lf);d=Lfbg-l; s=Lfb -l;   Lf-=l)
+  {I bak=Ln-Lf;l=a;Z(bak<l,l=bak);d=Lfb;s=Lfbg;Lf+=l;}
+ pf("d=(%s) s=(%s) l=%d\n",d,s,l);
+ R mmv(d,s,l);
+
+ Z(0>a,   Z(  -Lf<a, a=  -Lf);d=Lfbg+a; s=Lfb  +a; Lf+=a;)
+  {       Z(Ln-Lf<a, a=Ln-Lf);d=Lfb   ; s=Lfbg   ; Lf+=a;}
+
+ Z(0>a,   Z(t*Ln-Lf<a, a=t*Ln-Lf);Lf+=a   ; d=Lfbg ; s=Lfb  ;       )
+  {       Z(t*Ln-Lf<a, a=t*Ln-Lf);          d=Lfb  ; s=Lfbg ; Lf+=a;}
+*/
 
 //:~
